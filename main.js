@@ -1,3 +1,7 @@
+const container = document.getElementById('container');
+
+const userLikes = [];
+
 const posts = [
     {
         "id": 1,
@@ -55,3 +59,120 @@ const posts = [
         "created": "2021-03-05"
     }
 ];
+
+for (let i = 0; i < posts.length; i++) {
+    const currentPost = posts[i];
+    container.innerHTML += postTemplate(currentPost);
+}
+
+function postTemplate(postData){
+
+    const{ id, author, content, created, media, likes } = postData;
+    return `
+    <div class="post">
+            <div class="post__header">
+                <div class="post-meta">                    
+                    <div class="post-meta__icon">
+
+                        ${author.image ? profileImageTemplate(author) :
+                        profileImageDefaultTemplate(author)}                    
+                    </div>
+                    <div class="post-meta__data">
+                        <div class="post-meta__author">${author.name}</div>
+                        <div class="post-meta__time">${formatDate(created)}</div>
+                    </div>                    
+                </div>
+            </div>
+            <div class="post__text">${content}</div>
+            <div class="post__image">
+                <img src="${media}" alt="">
+            </div>
+            <div class="post__footer">
+                <div class="likes js-likes">
+                    <div class="likes__cta">
+                        <a class="like-button ${isPostLiked(id) ? 'like-button--liked' : ''} js-like-button" href="#">
+                            <i class="like-button__icon fas fa-thumbs-up" aria-hidden="true"></i>
+                            <span class="like-button__label">Mi Piace</span>
+                        </a>
+                    </div>
+                    <div class="likes__counter">
+                        Piace a <b id="like-counter-${id}" class="js-likes-counter">${likes}</b> persone
+                    </div>
+                </div> 
+            </div>            
+        </div>`;
+}
+
+function profileImageTemplate (userData){
+    const { name, image } = userData;
+    return `<img class = "profile-pic" src="${image}" alt ="${name}">`
+}
+
+function profileImageDefaultTemplate (userData) {
+    const { name } = userData;
+
+    const nameParts = name.split('');
+
+    const letters = [];
+    for (let i = 0; i < nameParts.length; i++) {
+        const namePart = nameParts[i];
+        const initialLetter = namePart[0];
+        letters.push(initialLetter);
+    }
+
+    const initials = letters.join('');
+
+    return `
+        <div class="profile-pic-default">
+            <span>${initials}</span>
+        </div>
+    `;
+}
+
+function formatDate(dateStr){
+    return dateStr.split('-').reverse().join('/');
+}
+
+function isPostLiked(postId) {
+    return userLikes.includes(postId);
+}
+
+
+//Bonus Like Button
+
+const likeButtons = document.querySelectorAll('.js-like-button');
+const likeCounters = document.querySelectorAll('.js-like-counter');
+
+for (let i = 0; i < likeButtons.length; i++ ){
+    const element = likeButtons[i];
+    element.addEventListener('click', function (e){
+
+        e.preventDefault();
+
+        if (!element.classList.contains('like-button--liked')){
+
+            element.classList.add('like-button--liked');
+
+            const thisCounter = likeCounters[i];
+
+            const number = parseInt(thisCounter.innerHTML);
+
+            thisCounter.innerHTML = number + 1;
+
+            const likedPost = posts[i];
+            likedPost.likes++;
+        } else {
+            
+            element.classList.remove('like-button--liked');
+
+            const thisCounter = likeCounters[i];
+
+            const number = parseInt(thisCounter.innerHTML);
+
+            thisCounter.innerHTML = number - 1;
+
+            const likedPost = posts[i];
+            likedPost.likes--;
+        }
+    });
+}
